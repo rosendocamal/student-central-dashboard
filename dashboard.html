@@ -1,0 +1,1346 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Central Dashboard - Tu Portal de Entrada</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkBg: '#0f172a',
+                        darkCard: '#1e293b',
+                        lightBg: '#f8fafc',
+                        lightCard: '#ffffff',
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
+        /* Scrollbar Personalizado */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        /* Eliminación de las barras blancas de los inputs de número */
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-darkBg dark:text-slate-100 min-h-screen flex flex-col md:flex-row pb-20 md:pb-0">
+
+    <!-- NOTIFICACIONES TOAST -->
+    <div id="toast" class="fixed bottom-24 md:bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 bg-emerald-600 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3">
+        <i class="fa-solid fa-circle-check text-xl"></i>
+        <span id="toast-message">¡Acción completada con éxito!</span>
+    </div>
+
+    <!-- NAVEGACIÓN LATERAL (SIDEBAR DESKTOP) -->
+    <aside class="hidden md:flex w-64 bg-white dark:bg-slate-950 text-slate-500 dark:text-slate-400 flex-col justify-between border-r border-slate-200 dark:border-slate-800 shrink-0">
+        <div class="p-6">
+            <!-- Logo / Branding -->
+            <div class="flex items-center gap-3 mb-8">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-cyan-500/20">
+                    S
+                </div>
+                <div>
+                    <h1 class="text-slate-800 dark:text-white font-extrabold text-lg tracking-wide">STUDENT HUB</h1>
+                    <span class="text-xs text-cyan-500 dark:text-cyan-400 font-semibold tracking-widest">PORTAL CENTRAL</span>
+                </div>
+            </div>
+
+            <!-- Enlaces de Navegación del Sistema (SPA) -->
+            <nav class="space-y-1">
+                <button onclick="switchView('dashboard')" id="nav-dashboard" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-800 dark:text-white bg-slate-100 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800/80 shadow-sm transition">
+                    <i class="fa-solid fa-chart-pie text-cyan-500 dark:text-cyan-400"></i>
+                    <span class="font-medium text-sm">Dashboard</span>
+                </button>
+                <button onclick="switchView('archive')" id="nav-archive" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:text-slate-800 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-900/40 transition">
+                    <i class="fa-solid fa-box-archive"></i>
+                    <span class="font-medium text-sm">Archivo</span>
+                </button>
+                <button onclick="switchView('settings')" id="nav-settings" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:text-slate-800 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-900/40 transition">
+                    <i class="fa-solid fa-sliders"></i>
+                    <span class="font-medium text-sm">Configuración</span>
+                </button>
+            </nav>
+        </div>
+
+        <!-- Modo Claro / Oscuro y Perfil de Usuario -->
+        <div class="p-6 border-t border-slate-200 dark:border-slate-800 space-y-4">
+            <!-- Botón de Modo Oscuro/Claro Interactivo -->
+            <button id="theme-toggle" class="w-full flex items-center justify-between px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-slate-50 dark:bg-slate-900/40 text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-white transition">
+                <div class="flex items-center gap-2.5">
+                    <i id="theme-icon" class="fa-solid fa-moon text-amber-500"></i>
+                    <span id="theme-text" class="text-xs font-semibold uppercase tracking-wider">Modo Oscuro</span>
+                </div>
+                <div class="w-8 h-4 bg-slate-300 dark:bg-slate-800 rounded-full p-0.5 flex items-center transition duration-300">
+                    <div id="toggle-ball" class="w-3 h-3 bg-cyan-500 dark:bg-cyan-400 rounded-full transform translate-x-4 transition duration-300"></div>
+                </div>
+            </button>
+
+            <!-- Datos del Estudiante -->
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 overflow-hidden flex items-center justify-center">
+                    <i class="fa-solid fa-user-graduate text-slate-600 dark:text-slate-300 text-lg"></i>
+                </div>
+                <div class="overflow-hidden">
+                    <h4 class="text-xs font-bold text-slate-800 dark:text-white truncate">Estudiante Avanzado</h4>
+                    <span class="text-[10px] text-slate-450 dark:text-slate-500 truncate block">Sistemas & Matemáticas</span>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- FLOATING DOCK PARA MÓVILES (Navegación Premium) -->
+    <nav class="md:hidden fixed bottom-4 left-4 right-4 z-40 bg-white/90 dark:bg-slate-950/80 backdrop-blur-xl border border-slate-200 dark:border-slate-800/85 rounded-2xl shadow-2xl flex justify-around items-center py-3 px-4">
+        <button onclick="switchView('dashboard')" id="mobile-nav-dashboard" class="flex flex-col items-center gap-1 text-cyan-500 dark:text-cyan-400">
+            <i class="fa-solid fa-chart-pie text-lg"></i>
+            <span class="text-[10px] font-bold">Dashboard</span>
+        </button>
+        <button onclick="switchView('archive')" id="mobile-nav-archive" class="flex flex-col items-center gap-1 text-slate-400">
+            <i class="fa-solid fa-box-archive text-lg"></i>
+            <span class="text-[10px] font-semibold">Archivo</span>
+        </button>
+        <button onclick="switchView('settings')" id="mobile-nav-settings" class="flex flex-col items-center gap-1 text-slate-400">
+            <i class="fa-solid fa-sliders text-lg"></i>
+            <span class="text-[10px] font-semibold">Ajustes</span>
+        </button>
+        <button id="mobile-theme-toggle" class="flex flex-col items-center gap-1 text-slate-400">
+            <i id="mobile-theme-icon" class="fa-solid fa-moon text-lg text-amber-500"></i>
+            <span class="text-[10px] font-semibold">Tema</span>
+        </button>
+    </nav>
+
+    <!-- ÁREA DE CONTENIDO PRINCIPAL -->
+    <main class="flex-grow flex flex-col overflow-y-auto">
+        
+        <!-- BARRA DE CABECERA SUPERIOR -->
+        <header class="h-16 border-b border-slate-250 dark:border-slate-800 flex items-center justify-between px-6 md:px-8 bg-white/50 dark:bg-slate-950/50 backdrop-blur-md sticky top-0 z-30">
+            <div class="flex items-center gap-4">
+                <h2 id="header-view-title" class="text-base md:text-lg font-bold text-slate-800 dark:text-white">Panel de Control de Estudiante</h2>
+                <span class="hidden lg:inline-block px-2.5 py-1 text-xs font-medium rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-500 border border-emerald-500/20">
+                    <i class="fa-solid fa-circle text-[8px] mr-1.5 animate-pulse"></i> Sincronizado
+                </span>
+            </div>
+            <div id="header-date-indicator" class="text-xs font-semibold text-slate-550 dark:text-slate-400">
+                Julio 2026
+            </div>
+        </header>
+
+        <!-- CONTENEDOR DE VISTA: DASHBOARD PRINCIPAL -->
+        <div id="view-dashboard" class="p-4 md:p-8 space-y-8 max-w-7xl w-full mx-auto flex-grow">
+
+            <!-- CUADRÍCULA DE UNIVERSIDADES FLEXIBLE (Generación Dinámica con adaptación de pares/impares) -->
+            <section id="universities-dashboard-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 auto-rows-fr">
+                <!-- Inyectado Dinámicamente por JS -->
+            </section>
+
+            <!-- MARCADORES (RECURSOS) Y SIDEBAR LATERAL DE CALENDARIO -->
+            <section class="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 items-start">
+                
+                <!-- SECCIÓN DE MARCADORES (Ocupa 2 columnas) -->
+                <div class="lg:col-span-2 bg-white dark:bg-darkCard rounded-3xl p-5 md:p-6 shadow-sm border border-slate-200 dark:border-slate-800/80 space-y-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                            <h3 class="font-bold text-slate-800 dark:text-white text-base md:text-lg">Marcadores Recientes (Firefox)</h3>
+                            <p class="text-xs text-slate-550 dark:text-slate-400">Haz clic en cualquier tarjeta para acceder al link directamente.</p>
+                        </div>
+                        <!-- Búsqueda en Marcadores -->
+                        <div class="relative max-w-xs w-full">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-450 text-sm"></i>
+                            <input id="bookmark-search" type="text" placeholder="Buscar marcador..." class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 py-2 pl-10 pr-4 rounded-xl text-sm placeholder-slate-400 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-cyan-500/30 transition">
+                        </div>
+                    </div>
+
+                    <!-- Chips de Filtrado por Formato -->
+                    <div class="flex flex-wrap gap-2.5 items-center">
+                        <span class="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-wider mr-1">Filtrar:</span>
+                        <button onclick="filterResources('all')" class="filter-chip px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 dark:bg-white text-white dark:text-slate-950 shadow-sm border border-transparent transition">
+                            Todos
+                        </button>
+                        <button onclick="filterResources('video')" class="filter-chip px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-850 border border-slate-200 dark:border-slate-800 transition">
+                            <i class="fa-solid fa-video mr-1 text-rose-500"></i> Videos
+                        </button>
+                        <button onclick="filterResources('pdf')" class="filter-chip px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-850 border border-slate-200 dark:border-slate-800 transition">
+                            <i class="fa-solid fa-file-pdf mr-1 text-emerald-500"></i> PDFs
+                        </button>
+                        <button onclick="filterResources('curso')" class="filter-chip px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-850 border border-slate-200 dark:border-slate-800 transition">
+                            <i class="fa-solid fa-graduation-cap mr-1 text-indigo-500"></i> Cursos
+                        </button>
+                        <button onclick="filterResources('sitio')" class="filter-chip px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-850 border border-slate-200 dark:border-slate-800 transition">
+                            <i class="fa-solid fa-globe mr-1 text-cyan-500"></i> Sitios Web
+                        </button>
+                    </div>
+
+                    <!-- Cuadrícula de Marcadores Limpios (Sin Imágenes) -->
+                    <div id="bookmarks-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- Inyectado por JS -->
+                    </div>
+                </div>
+
+                <!-- BARRA LATERAL DERECHA (Quick Add, Calendario Académico) -->
+                <div class="space-y-6 md:space-y-8">
+                    
+                    <!-- FORMULARIO DE AGREGAR MARCADOR RÁPIDO -->
+                    <div class="bg-white dark:bg-darkCard rounded-3xl p-5 md:p-6 shadow-sm border border-slate-200 dark:border-slate-800/80 space-y-4">
+                        <h4 class="font-bold text-slate-800 dark:text-white text-sm md:text-base flex items-center gap-2">
+                            <i class="fa-solid fa-circle-plus text-cyan-500"></i> Agregar Marcador Nuevo
+                        </h4>
+                        <div class="space-y-3">
+                            <input id="new-title" type="text" placeholder="Título del recurso..." class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 py-2.5 px-3.5 rounded-xl text-sm placeholder-slate-400 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-cyan-500/30 transition">
+                            <input id="new-url" type="text" placeholder="URL (e.g., https://...)" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 py-2.5 px-3.5 rounded-xl text-sm placeholder-slate-400 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-cyan-500/30 transition">
+                            
+                            <div class="grid grid-cols-2 gap-2">
+                                <select id="new-format" class="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 py-2 px-2.5 rounded-xl text-xs text-slate-600 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-cyan-500/30 transition">
+                                    <option value="video">🎞️ Video</option>
+                                    <option value="pdf">📄 PDF</option>
+                                    <option value="curso">🎓 Curso</option>
+                                    <option value="sitio" selected>🌐 Sitio Web</option>
+                                </select>
+                                <select id="new-theme" class="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 py-2 px-2.5 rounded-xl text-xs text-slate-600 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-cyan-500/30 transition">
+                                    <option value="Sistemas" selected>💻 Sistemas</option>
+                                    <option value="Matemáticas">📐 Matemáticas</option>
+                                    <option value="General">🌟 General</option>
+                                </select>
+                            </div>
+                            <button onclick="addNewBookmark()" class="w-full bg-gradient-to-tr from-cyan-500 to-indigo-600 hover:from-cyan-600 hover:to-indigo-700 text-white font-bold py-2.5 rounded-xl text-xs tracking-wider uppercase transition shadow-lg shadow-cyan-500/10">
+                                Guardar Marcador <i class="fa-solid fa-plus ml-1.5"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- CALENDARIO ACADÉMICO INTERACTIVO Y LISTADO DE EVENTOS -->
+                    <div class="bg-white dark:bg-darkCard rounded-3xl p-5 md:p-6 shadow-sm border border-slate-200 dark:border-slate-800/80 space-y-6">
+                        <div class="flex items-center justify-between">
+                            <h4 class="font-bold text-slate-800 dark:text-white text-sm md:text-base flex items-center gap-2">
+                                <i class="fa-solid fa-calendar-days text-indigo-500"></i> Calendario Académico
+                            </h4>
+                            <!-- Controles de Mes Dinámico -->
+                            <div class="flex items-center gap-2 bg-slate-55 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 py-1 px-2.5 rounded-xl">
+                                <button onclick="prevMonth()" class="text-slate-550 hover:text-indigo-500 transition px-1"><i class="fa-solid fa-chevron-left text-[10px]"></i></button>
+                                <span id="calendar-month-label" class="text-xs font-bold text-slate-700 dark:text-indigo-400 min-w-[70px] text-center">Julio 2026</span>
+                                <button onclick="nextMonth()" class="text-slate-550 hover:text-indigo-550 transition px-1"><i class="fa-solid fa-chevron-right text-[10px]"></i></button>
+                            </div>
+                        </div>
+
+                        <!-- Mini Calendario de Mes Dinámico -->
+                        <div>
+                            <div class="grid grid-cols-7 text-center text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">
+                                <span>Do</span><span>Lu</span><span>Ma</span><span>Mi</span><span>Ju</span><span>Vi</span><span>Sá</span>
+                            </div>
+                            <div id="calendar-days" class="grid grid-cols-7 gap-1.5 text-center text-xs font-semibold">
+                                <!-- Inyectado por JS -->
+                            </div>
+                        </div>
+
+                        <!-- Sección de Creación de Tareas / Eventos Dinámicos -->
+                        <div class="pt-4 border-t border-slate-100 dark:border-slate-800/60 space-y-3">
+                            <h5 class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                                <i class="fa-solid fa-folder-plus text-cyan-500"></i> Añadir Evento / Tarea
+                            </h5>
+                            <div class="flex gap-2">
+                                <input id="event-title-input" type="text" placeholder="Nueva tarea..." class="flex-grow bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 py-2.5 px-3.5 rounded-xl text-xs placeholder-slate-400 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-cyan-500/30 transition">
+                                
+                                <!-- Input del día con estilo limpio y sin spinners de arriba/abajo -->
+                                <div class="relative w-16">
+                                    <input id="event-day-input" type="number" min="1" max="31" placeholder="Día" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 py-2.5 rounded-xl text-xs text-center placeholder-slate-400 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-cyan-500/30 transition">
+                                </div>
+
+                                <button onclick="addNewEvent()" class="px-3.5 bg-cyan-500 hover:bg-cyan-600 text-white rounded-xl text-xs font-bold transition flex items-center justify-center shrink-0">
+                                    <i class="fa-solid fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Lista Dinámica de Eventos (Se van apilando abajo) -->
+                        <div class="space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800/60">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Eventos Clave</span>
+                                <span class="text-[9px] text-slate-450 italic hidden sm:inline">Haz clic en un día del calendario para mover el pago</span>
+                            </div>
+
+                            <!-- Contenedor Dinámico de Lista de Eventos y Límite de Pago -->
+                            <div id="events-list-container" class="space-y-2.5">
+                                <!-- La fecha de pago se renderiza primero, luego las entregas creadas dinámicamente -->
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+        </div>
+
+        <!-- CONTENEDOR DE VISTA: ARCHIVO -->
+        <div id="view-archive" class="hidden p-4 md:p-8 space-y-8 max-w-7xl w-full mx-auto flex-grow">
+            <div class="bg-white dark:bg-darkCard rounded-3xl p-5 md:p-6 shadow-sm border border-slate-200 dark:border-slate-800/80 space-y-6">
+                <div>
+                    <h3 class="font-bold text-slate-800 dark:text-white text-base md:text-lg">Historial de Marcadores Archivados</h3>
+                    <p class="text-xs text-slate-550 dark:text-slate-400">Restaura recursos a tu panel de control principal o elimínalos de forma permanente.</p>
+                </div>
+
+                <!-- Cuadrícula de Archivo Compacto -->
+                <div id="archive-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Inyectado por JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- CONTENEDOR DE VISTA: CONFIGURACIÓN (SETTINGS) -->
+        <div id="view-settings" class="hidden p-4 md:p-8 space-y-8 max-w-4xl w-full mx-auto flex-grow">
+            
+            <!-- PANEL DE EXPORTACIÓN E IMPORTACIÓN JSON -->
+            <div class="bg-white dark:bg-darkCard rounded-3xl p-5 md:p-6 shadow-sm border border-slate-200 dark:border-slate-800/80 space-y-6">
+                <div>
+                    <h3 class="font-bold text-slate-800 dark:text-white text-base md:text-lg">Portabilidad de Datos</h3>
+                    <p class="text-xs text-slate-550 dark:text-slate-400">Exporta o importa tus marcadores, materias y configuración académica en formato JSON para llevarlos a otros dispositivos.</p>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <!-- Exportar -->
+                    <button onclick="exportAllData()" class="flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-indigo-500 hover:bg-indigo-600 text-white font-bold text-sm transition shadow-lg shadow-indigo-500/15">
+                        <i class="fa-solid fa-file-export text-lg"></i> Exportar JSON de Datos
+                    </button>
+                    <!-- Importar -->
+                    <label for="import-json-file" class="flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-900 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 font-bold text-sm cursor-pointer transition">
+                        <i class="fa-solid fa-file-import text-lg text-cyan-500"></i> Importar JSON de Datos
+                    </label>
+                    <input type="file" id="import-json-file" accept=".json" onchange="importAllData(event)" class="hidden">
+                </div>
+            </div>
+
+            <!-- PANEL DE AJUSTES ACADÉMICOS DINÁMICO -->
+            <div class="bg-white dark:bg-darkCard rounded-3xl p-5 md:p-6 shadow-sm border border-slate-200 dark:border-slate-800/80 space-y-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h3 class="font-bold text-slate-800 dark:text-white text-base md:text-lg">Panel de Ajustes Académicos</h3>
+                        <p class="text-xs text-slate-550 dark:text-slate-400">Modifica, añade o elimina tus universidades y materias a tu medida.</p>
+                    </div>
+                    <!-- Botón para Añadir Universidad Dinámica -->
+                    <button onclick="addUniversity()" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-600 text-white font-bold text-xs transition shadow-lg shadow-cyan-500/15">
+                        <i class="fa-solid fa-plus"></i> Añadir Universidad
+                    </button>
+                </div>
+
+                <!-- Contenedor Dinámico de Universidades en Settings -->
+                <div id="settings-universities-container" class="space-y-6">
+                    <!-- Inyectado dinámicamente por JS -->
+                </div>
+
+                <!-- BOTÓN DE GUARDADO GLOBAL -->
+                <button onclick="saveAllSettings()" class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold py-3.5 rounded-2xl text-sm tracking-wide transition shadow-lg shadow-emerald-500/15">
+                    <i class="fa-solid fa-floppy-disk mr-1.5"></i> Guardar Todos los Cambios Académicos
+                </button>
+            </div>
+        </div>
+
+        <!-- PIE DE PÁGINA -->
+        <footer class="mt-auto py-6 text-center text-xs text-slate-500 dark:text-slate-600 border-t border-slate-200 dark:border-slate-800">
+            © 2026 Student Central Dashboard. Diseñado bajo estándares de vanguardia web y adaptabilidad premium.
+        </footer>
+
+    </main>
+
+    <!-- SCRIPTS DE INTERACTIVIDAD Y PERSISTENCIA -->
+    <script>
+        // Marcadores de Firefox iniciales con soporte visual limpio y minimalista
+        const DEFAULT_BOOKMARKS = [
+            { id: 1, title: 'Video: Python for Data Science', url: 'https://youtube.com', format: 'video', theme: 'Sistemas', status: 'active' },
+            { id: 2, title: 'PDF: Deep Learning Research Paper', url: 'https://arxiv.org', format: 'pdf', theme: 'Sistemas', status: 'active' },
+            { id: 3, title: 'Course: UI/UX Principles', url: 'https://coursera.org', format: 'curso', theme: 'General', status: 'active' },
+            { id: 4, title: 'Project: NLP Model Repository', url: 'https://github.com', format: 'sitio', theme: 'Matemáticas', status: 'active' }
+        ];
+
+        // Datos académicos por defecto estructurados en formato de Array Dinámico
+        const DEFAULT_ACADEMIC_DATA = [
+            {
+                id: 'u_1',
+                name: 'Univ. Aztlán (Playa del Carmen)',
+                career: 'Ingeniería en Sistemas Computacionales',
+                portal: 'https://universidadaztlan.edu.mx',
+                subjects: [
+                    { id: 's_1_1', name: 'Probabilidad y Estadística', link: 'https://classroom.google.com', icon: 'calculator' },
+                    { id: 's_1_2', name: 'Estructuras de Datos', link: 'https://classroom.google.com', icon: 'sitemap' },
+                    { id: 's_1_3', name: 'Investigación de Operaciones', link: 'https://classroom.google.com', icon: 'gears' }
+                ]
+            },
+            {
+                id: 'u_2',
+                name: 'UNADM',
+                career: 'Licenciatura en Matemáticas',
+                portal: 'https://www.unadmexico.mx/',
+                subjects: [
+                    { id: 's_2_1', name: 'Desarrollo Humano', link: 'https://classroom.google.com', icon: 'brain' },
+                    { id: 's_2_2', name: 'Introducción al Pensamiento Matemático', link: 'https://classroom.google.com', icon: 'calculator' },
+                    { id: 's_2_3', name: 'Contexto Socioeconómico de México', link: 'https://classroom.google.com', icon: 'earth-americas' }
+                ]
+            }
+        ];
+
+        // Eventos dinámicos del calendario iniciales
+        const DEFAULT_EVENTS = [
+            { id: 101, title: 'Estructuras de Datos: Entrega de Proyecto', day: 25, month: 6, year: 2026 }
+        ];
+
+        // Carga de estado persistente de LocalStorage
+        let bookmarks = JSON.parse(localStorage.getItem('student_bookmarks')) || DEFAULT_BOOKMARKS;
+        let academicData = JSON.parse(localStorage.getItem('student_academic')) || DEFAULT_ACADEMIC_DATA;
+        let calendarEvents = JSON.parse(localStorage.getItem('student_events')) || DEFAULT_EVENTS;
+        let paymentDay = parseInt(localStorage.getItem('student_payment_day')) || 15;
+        
+        // Estado temporal para cambios académicos aislados de la persistencia
+        let tempAcademicData = [];
+
+        // Estado del Calendario Real Dinámico (Mes por defecto: Julio 2026)
+        let currentMonth = 6; // Julio (0-indexed: Enero es 0, Julio es 6)
+        let currentYear = 2026;
+        let selectedFormat = 'all';
+
+        const MONTHS_SPANISH = [
+            "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+            "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+        ];
+
+        // Inicialización de la Aplicación
+        document.addEventListener('DOMContentLoaded', () => {
+            initTheme();
+            renderDashboardAcademic();
+            renderBookmarks();
+            renderCalendar();
+            renderEventsList();
+            setupMobileThemeToggle();
+        });
+
+        // CONTROL DE INTERFAZ SPA (Cambio de Pestañas dinámico adaptado a Desktop y Móvil)
+        function switchView(viewName) {
+            const views = ['dashboard', 'archive', 'settings'];
+            views.forEach(v => {
+                document.getElementById(`view-${v}`).classList.add('hidden');
+                
+                // Reset de clases del menú lateral desktop
+                document.getElementById(`nav-${v}`).className = "w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:text-slate-800 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-900/40 transition";
+                
+                // Reset de clases del menú dock móvil
+                const mobileBtn = document.getElementById(`mobile-nav-${v}`);
+                if (mobileBtn) {
+                    mobileBtn.className = "flex flex-col items-center gap-1 text-slate-400";
+                    mobileBtn.querySelector('span').className = "text-[10px] font-semibold";
+                }
+            });
+
+            // Activar la vista correspondiente
+            document.getElementById(`view-${viewName}`).classList.remove('hidden');
+            
+            // Estilizar botón del menú activo (Desktop)
+            const activeBtn = document.getElementById(`nav-${viewName}`);
+            activeBtn.className = "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-800 dark:text-white bg-slate-100 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800/80 shadow-sm transition";
+
+            // Estilizar botón activo (Móvil)
+            const activeMobileBtn = document.getElementById(`mobile-nav-${viewName}`);
+            if (activeMobileBtn) {
+                activeMobileBtn.className = "flex flex-col items-center gap-1 text-cyan-500 dark:text-cyan-400";
+                activeMobileBtn.querySelector('span').className = "text-[10px] font-bold";
+            }
+
+            // Actualizar título de cabecera
+            const viewTitles = {
+                'dashboard': 'Panel de Control de Estudiante',
+                'archive': 'Archivo de Marcadores',
+                'settings': 'Ajustes Académicos y Materias'
+            };
+            document.getElementById('header-view-title').textContent = viewTitles[viewName];
+
+            // Renderizados específicos al cambiar de vista
+            if (viewName === 'archive') {
+                renderArchive();
+            } else if (viewName === 'dashboard') {
+                renderDashboardAcademic();
+                renderBookmarks();
+                renderCalendar();
+                renderEventsList();
+            } else if (viewName === 'settings') {
+                // Generamos una copia profunda fresca para editar de manera segura sin alterar el dashboard
+                tempAcademicData = JSON.parse(JSON.stringify(academicData));
+                renderSettingsUniversities();
+            }
+        }
+
+        // TEMA DUAL (Modo Claro / Modo Oscuro) con sincronización de botones móvil/desktop
+        const themeToggle = document.getElementById('theme-toggle');
+        const htmlElement = document.documentElement;
+
+        function toggleThemeMode() {
+            const themeIcon = document.getElementById('theme-icon');
+            const themeText = document.getElementById('theme-text');
+            const toggleBall = document.getElementById('toggle-ball');
+            const mobileThemeIcon = document.getElementById('mobile-theme-icon');
+
+            if (htmlElement.classList.contains('dark')) {
+                htmlElement.classList.remove('dark');
+                htmlElement.classList.add('light');
+                localStorage.setItem('theme', 'light');
+                themeIcon.className = "fa-solid fa-sun text-amber-500";
+                if (mobileThemeIcon) mobileThemeIcon.className = "fa-solid fa-sun text-amber-500 text-lg";
+                themeText.textContent = "Modo Claro";
+                toggleBall.classList.remove('translate-x-4');
+                toggleBall.classList.add('translate-x-0');
+                showToast("Modo claro activado");
+            } else {
+                htmlElement.classList.remove('light');
+                htmlElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+                themeIcon.className = "fa-solid fa-moon text-amber-400";
+                if (mobileThemeIcon) mobileThemeIcon.className = "fa-solid fa-moon text-amber-400 text-lg";
+                themeText.textContent = "Modo Oscuro";
+                toggleBall.classList.remove('translate-x-0');
+                toggleBall.classList.add('translate-x-4');
+                showToast("Modo oscuro activado");
+            }
+        }
+
+        themeToggle.addEventListener('click', toggleThemeMode);
+
+        function setupMobileThemeToggle() {
+            const mobileToggle = document.getElementById('mobile-theme-toggle');
+            if (mobileToggle) {
+                mobileToggle.addEventListener('click', toggleThemeMode);
+            }
+        }
+
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            const themeIcon = document.getElementById('theme-icon');
+            const themeText = document.getElementById('theme-text');
+            const toggleBall = document.getElementById('toggle-ball');
+            const mobileThemeIcon = document.getElementById('mobile-theme-icon');
+
+            if (savedTheme === 'light') {
+                htmlElement.classList.remove('dark');
+                htmlElement.classList.add('light');
+                themeIcon.className = "fa-solid fa-sun text-amber-500";
+                if (mobileThemeIcon) mobileThemeIcon.className = "fa-solid fa-sun text-amber-500 text-lg";
+                themeText.textContent = "Modo Claro";
+                toggleBall.className = "w-3 h-3 bg-cyan-500 dark:bg-cyan-400 rounded-full transform translate-x-0 transition duration-300";
+            } else {
+                htmlElement.classList.remove('light');
+                htmlElement.classList.add('dark');
+                themeIcon.className = "fa-solid fa-moon text-amber-400";
+                if (mobileThemeIcon) mobileThemeIcon.className = "fa-solid fa-moon text-amber-400 text-lg";
+                themeText.textContent = "Modo Oscuro";
+                toggleBall.className = "w-3 h-3 bg-cyan-500 dark:bg-cyan-400 rounded-full transform translate-x-4 transition duration-300";
+            }
+        }
+
+        // RENDERIZADO DINÁMICO DE TARJETAS DE UNIVERSIDADES EN DASHBOARD PRINCIPAL
+        // Modificado con un optimizador inteligente para centrar la última tarjeta si hay un número impar
+        function renderDashboardAcademic() {
+            const container = document.getElementById('universities-dashboard-grid');
+            container.innerHTML = '';
+
+            if (academicData.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full py-16 bg-white dark:bg-darkCard rounded-3xl border border-slate-200 dark:border-slate-800/80 text-center text-slate-450 dark:text-slate-500">
+                        <i class="fa-solid fa-graduation-cap text-5xl mb-4 opacity-40"></i>
+                        <p class="text-sm font-semibold">No tienes universidades configuradas. Ve a la pestaña Configuración para añadir una.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Colores por índice para distinguir visualmente las tarjetas
+            const themeColors = [
+                { border: 'emerald', text: 'emerald', bg: 'emerald', colors: ['indigo', 'pink', 'cyan'] },
+                { border: 'indigo', text: 'indigo', bg: 'indigo', colors: ['amber', 'rose', 'teal'] },
+                { border: 'rose', text: 'rose', bg: 'rose', colors: ['indigo', 'pink', 'cyan'] },
+                { border: 'cyan', text: 'cyan', bg: 'cyan', colors: ['amber', 'rose', 'teal'] }
+            ];
+
+            const totalUnis = academicData.length;
+
+            academicData.forEach((uni, uniIdx) => {
+                const style = themeColors[uniIdx % themeColors.length];
+                const initial = uni.name ? uni.name.charAt(0).toUpperCase() : 'U';
+
+                // Crear elemento Article para la tarjeta académica
+                const article = document.createElement('article');
+                
+                // --- AJUSTE IMPAR CLAVE ---
+                // Si hay un número impar de universidades y esta es la última tarjeta, se expande al ancho completo (col-span-full)
+                if (totalUnis % 2 !== 0 && uniIdx === totalUnis - 1) {
+                    article.className = "col-span-full bg-white dark:bg-darkCard rounded-3xl p-5 md:p-6 shadow-sm border border-slate-200 dark:border-slate-800/80 flex flex-col justify-between hover:shadow-md transition duration-300";
+                } else {
+                    article.className = "bg-white dark:bg-darkCard rounded-3xl p-5 md:p-6 shadow-sm border border-slate-200 dark:border-slate-800/80 flex flex-col justify-between hover:shadow-md transition duration-300";
+                }
+                
+                // Header de la Tarjeta
+                let headerHTML = `
+                    <div>
+                        <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 rounded-2xl bg-${style.bg}-500/10 border border-${style.border}-500/20 text-${style.text}-600 dark:text-${style.text}-500 flex items-center justify-center font-extrabold text-2xl shadow-inner shrink-0">
+                                    ${initial}
+                                </div>
+                                <div class="min-w-0">
+                                    <h3 class="font-bold text-slate-800 dark:text-white text-base md:text-lg truncate">${uni.name || 'Sin Nombre'}</h3>
+                                    <p class="text-[10px] md:text-xs text-slate-550 dark:text-slate-400 font-semibold uppercase tracking-wider truncate">${uni.career || 'Sin Carrera'}</p>
+                                </div>
+                            </div>
+                            <a href="${uni.portal || '#'}" target="_blank" class="self-start px-3.5 py-1.5 rounded-xl text-xs font-bold text-${style.text}-600 dark:text-${style.text}-400 bg-${style.bg}-50 dark:bg-${style.bg}-500/10 border border-${style.border}-200 dark:border-${style.border}-500/20 hover:bg-${style.bg}-100 dark:hover:bg-${style.bg}-500/20 transition flex items-center gap-1.5 whitespace-nowrap">
+                                <i class="fa-solid fa-globe"></i> Portal Oficial
+                            </a>
+                        </div>
+
+                        <div class="space-y-3.5">
+                            <h4 class="text-xs font-bold text-slate-450 dark:text-slate-500 uppercase tracking-widest mb-2">Materias y Aulas Virtuales</h4>
+                `;
+
+                // Render de Materias de esta Universidad
+                if (uni.subjects.length === 0) {
+                    headerHTML += `
+                        <p class="text-xs text-slate-450 italic py-2">No has agregado materias todavía.</p>
+                    `;
+                } else {
+                    uni.subjects.forEach((subj, subIdx) => {
+                        const subjColor = style.colors[subIdx % style.colors.length];
+                        const icon = subj.icon || 'calculator';
+                        headerHTML += `
+                            <div class="flex items-center justify-between p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800/60 hover:scale-[1.01] transition-all">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-9 h-9 rounded-xl bg-${subjColor}-500/10 text-${subjColor}-600 dark:text-${subjColor}-500 flex items-center justify-center">
+                                        <i class="fa-solid fa-${icon}"></i>
+                                    </div>
+                                    <div>
+                                        <h5 class="text-sm font-bold text-slate-700 dark:text-slate-200">${subj.name || 'Sin Asignar'}</h5>
+                                        <span class="text-xs text-slate-400 dark:text-slate-500">Aula Virtual</span>
+                                    </div>
+                                </div>
+                                <a href="${subj.link || '#'}" target="_blank" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-${subjColor}-500/10 text-${subjColor}-600 dark:text-${subjColor}-500 hover:bg-${subjColor}-505 hover:text-white transition">
+                                    Entrar <i class="fa-solid fa-arrow-up-right-from-square ml-1 text-[10px]"></i>
+                                </a>
+                            </div>
+                        `;
+                    });
+                }
+
+                headerHTML += `
+                        </div>
+                    </div>
+                `;
+                
+                article.innerHTML = headerHTML;
+                container.appendChild(article);
+            });
+        }
+
+        // --- SISTEMA DE CONFIGURACIÓN ACADÉMICA DINÁMICA ---
+
+        // RENDERIZAR ESTRUCTURA DINÁMICA EN PESTAÑA SETTINGS
+        function renderSettingsUniversities() {
+            const container = document.getElementById('settings-universities-container');
+            container.innerHTML = '';
+
+            if (tempAcademicData.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-8 text-slate-400 dark:text-slate-500">
+                        <i class="fa-solid fa-folder-open text-4xl mb-2 block"></i>
+                        <span class="text-sm">Agrega una Universidad usando el botón de arriba para comenzar.</span>
+                    </div>
+                `;
+                return;
+            }
+
+            tempAcademicData.forEach((uni, uniIdx) => {
+                const colors = ['emerald', 'indigo', 'rose', 'cyan'];
+                const badgeColor = colors[uniIdx % colors.length];
+
+                const uniBlock = document.createElement('div');
+                uniBlock.className = "p-4 md:p-5 rounded-2xl bg-slate-50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800/80 space-y-4";
+                
+                // Cabecera de la Universidad con botón de Eliminar Universidad
+                let blockHTML = `
+                    <div class="flex items-center justify-between border-b border-slate-200/50 dark:border-slate-800 pb-3">
+                        <h4 class="font-bold text-sm text-${badgeColor}-500 uppercase tracking-widest flex items-center gap-2">
+                            <i class="fa-solid fa-graduation-cap"></i> Universidad ${String.fromCharCode(65 + uniIdx)} (${uni.career || 'Carrera'})
+                        </h4>
+                        <button onclick="deleteUniversity('${uni.id}')" class="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-red-500/10 hover:bg-red-500 hover:text-white text-red-500 text-xs font-bold transition border border-red-500/15">
+                            <i class="fa-solid fa-circle-minus"></i> Eliminar Universidad
+                        </button>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5">Nombre Universidad</label>
+                            <input type="text" value="${uni.name || ''}" oninput="updateUniField('${uni.id}', 'name', this.value)" class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 py-2 px-3 rounded-xl text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500/30">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5">Nombre de la Carrera</label>
+                            <input type="text" value="${uni.career || ''}" oninput="updateUniField('${uni.id}', 'career', this.value)" class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 py-2 px-3 rounded-xl text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500/30">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5">Portal de la Universidad (Enlace)</label>
+                            <input type="text" value="${uni.portal || ''}" oninput="updateUniField('${uni.id}', 'portal', this.value)" class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 py-2 px-3 rounded-xl text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500/30">
+                        </div>
+                    </div>
+
+                    <!-- MATERIAS DE ESTA UNIVERSIDAD -->
+                    <div class="space-y-4 pt-3 border-t border-slate-200 dark:border-slate-800">
+                        <div class="flex items-center justify-between">
+                            <span class="block text-xs font-bold text-slate-400 uppercase">Materias, Links e Iconos</span>
+                            <button onclick="addSubjectToUni('${uni.id}')" class="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-cyan-500/10 hover:bg-cyan-500 hover:text-white text-cyan-500 text-xs font-bold transition border border-cyan-500/15">
+                                <i class="fa-solid fa-plus-circle"></i> Añadir Materia
+                            </button>
+                        </div>
+
+                        <div class="grid grid-cols-1 gap-4" id="subjects-list-${uni.id}">
+                `;
+
+                // Renderizado de las materias dinámicamente con su bote de basura
+                uni.subjects.forEach((subj, subIdx) => {
+                    blockHTML += `
+                        <div class="grid grid-cols-1 md:grid-cols-12 gap-3 p-3 bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800/80 rounded-xl items-end">
+                            <div class="md:col-span-4">
+                                <label class="block text-[10px] font-bold text-slate-450 dark:text-slate-500 mb-1">Nombre Materia ${subIdx + 1}</label>
+                                <input type="text" value="${subj.name || ''}" oninput="updateSubjField('${uni.id}', '${subj.id}', 'name', this.value)" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 py-1.5 px-3 rounded-lg text-xs text-slate-800 dark:text-slate-100 focus:outline-none">
+                            </div>
+                            <div class="md:col-span-4">
+                                <label class="block text-[10px] font-bold text-slate-450 dark:text-slate-500 mb-1">Enlace de Aula</label>
+                                <input type="text" value="${subj.link || ''}" oninput="updateSubjField('${uni.id}', '${subj.id}', 'link', this.value)" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 py-1.5 px-3 rounded-lg text-xs text-slate-800 dark:text-slate-100 focus:outline-none">
+                            </div>
+                            <div class="md:col-span-3">
+                                <label class="block text-[10px] font-bold text-slate-450 dark:text-slate-500 mb-1">Icono</label>
+                                <select onchange="updateSubjField('${uni.id}', '${subj.id}', 'icon', this.value)" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 py-1.5 px-2 rounded-lg text-xs text-slate-800 dark:text-slate-100 focus:outline-none">
+                                    <option value="calculator" ${subj.icon === 'calculator' ? 'selected' : ''}>🔢 Matemáticas/Cálculo</option>
+                                    <option value="sitemap" ${subj.icon === 'sitemap' ? 'selected' : ''}>🕸️ Estructuras/Redes</option>
+                                    <option value="gears" ${subj.icon === 'gears' ? 'selected' : ''}>⚙️ Operaciones/Sistemas</option>
+                                    <option value="brain" ${subj.icon === 'brain' ? 'selected' : ''}>🧠 Humano/Psicología</option>
+                                    <option value="earth-americas" ${subj.icon === 'earth-americas' ? 'selected' : ''}>🌎 Social/Contexto</option>
+                                    <option value="laptop" ${subj.icon === 'laptop' ? 'selected' : ''}>💻 Computadora/Código</option>
+                                    <option value="book" ${subj.icon === 'book' ? 'selected' : ''}>📚 Libro/Estudio</option>
+                                </select>
+                            </div>
+                            <!-- Botón Eliminar Materia (Papelera) -->
+                            <div class="md:col-span-1 flex justify-center pb-1">
+                                <button onclick="deleteSubjectFromUni('${uni.id}', '${subj.id}')" class="text-rose-500 hover:text-rose-700 p-2 rounded-lg hover:bg-rose-500/10 transition" title="Eliminar Materia">
+                                    <i class="fa-solid fa-trash text-sm"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                blockHTML += `
+                        </div>
+                    </div>
+                `;
+
+                uniBlock.innerHTML = blockHTML;
+                container.appendChild(uniBlock);
+            });
+        }
+
+        // ACCIÓN: AÑADIR NUEVA UNIVERSIDAD (Opera sobre la variable temporal tempAcademicData)
+        function addUniversity() {
+            const newId = 'u_' + Date.now();
+            const newUni = {
+                id: newId,
+                name: '',
+                career: '',
+                portal: '',
+                subjects: []
+            };
+            tempAcademicData.push(newUni);
+            renderSettingsUniversities();
+            showToast("Universidad añadida (clic en Guardar para aplicar).");
+        }
+
+        // ACCIÓN: ELIMINAR UNIVERSIDAD (Opera sobre la variable temporal tempAcademicData)
+        function deleteUniversity(uniId) {
+            tempAcademicData = tempAcademicData.filter(uni => uni.id !== uniId);
+            renderSettingsUniversities();
+            showToast("Universidad quitada de la lista temporal.");
+        }
+
+        // ACCIÓN: AÑADIR MATERIA A UNA UNIVERSIDAD (Opera sobre la variable temporal tempAcademicData)
+        function addSubjectToUni(uniId) {
+            const uni = tempAcademicData.find(u => u.id === uniId);
+            if (uni) {
+                const subId = 's_' + Date.now();
+                uni.subjects.push({
+                    id: subId,
+                    name: '',
+                    link: '',
+                    icon: 'calculator'
+                });
+                renderSettingsUniversities();
+                showToast("Materia añadida temporalmente.");
+            }
+        }
+
+        // ACCIÓN: ELIMINAR MATERIA DE UNA UNIVERSIDAD (Opera sobre la variable temporal tempAcademicData)
+        function deleteSubjectFromUni(uniId, subjId) {
+            const uni = tempAcademicData.find(u => u.id === uniId);
+            if (uni) {
+                uni.subjects = uni.subjects.filter(s => s.id !== subjId);
+                renderSettingsUniversities();
+                showToast("Materia removida temporalmente.");
+            }
+        }
+
+        // MANEJADORES DE INPUT TEMPORAL (Actualizan el estado temporal local dinámicamente)
+        function updateUniField(uniId, field, value) {
+            const uni = tempAcademicData.find(u => u.id === uniId);
+            if (uni) uni[field] = value;
+        }
+
+        // MANEJADORES DE INPUT TEMPORAL PARA MATERIAS
+        function updateSubjField(uniId, subjId, field, value) {
+            const uni = tempAcademicData.find(u => u.id === uniId);
+            if (uni) {
+                const subj = uni.subjects.find(s => s.id === subjId);
+                if (subj) subj[field] = value;
+            }
+        }
+
+        // GUARDADO DE CONFIGURACIÓN ACADÉMICA GLOBAL
+        function saveAllSettings() {
+            academicData = JSON.parse(JSON.stringify(tempAcademicData));
+            localStorage.setItem('student_academic', JSON.stringify(academicData));
+            showToast("Ajustes académicos guardados exitosamente");
+            switchView('dashboard');
+        }
+
+        // RENDERIZAR RECURSOS / MARCADORES VISUALES LIMPIOS (Sin imágenes)
+        function renderBookmarks() {
+            const grid = document.getElementById('bookmarks-grid');
+            const searchVal = document.getElementById('bookmark-search').value.toLowerCase();
+            grid.innerHTML = '';
+
+            // Solo mostrar marcadores activos
+            const activeBookmarks = bookmarks.filter(b => b.status !== 'archived');
+
+            const filtered = activeBookmarks.filter(b => {
+                const matchesFormat = (selectedFormat === 'all' || b.format === selectedFormat);
+                const matchesSearch = (b.title.toLowerCase().includes(searchVal) || b.theme.toLowerCase().includes(searchVal));
+                return matchesFormat && matchesSearch;
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full py-12 flex flex-col items-center justify-center text-slate-450/60 dark:text-slate-500">
+                        <i class="fa-solid fa-bookmark text-4xl mb-3"></i>
+                        <span class="text-sm">No se encontraron marcadores activos</span>
+                    </div>
+                `;
+                return;
+            }
+
+            filtered.forEach(b => {
+                let iconClass = "fa-solid fa-globe text-cyan-500";
+                let formatLabel = "Sitio Web";
+                let badgeColor = "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/10";
+
+                if (b.format === 'video') { 
+                    iconClass = "fa-solid fa-video text-rose-500"; 
+                    formatLabel = "Video";
+                    badgeColor = "bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/10";
+                }
+                else if (b.format === 'pdf') { 
+                    iconClass = "fa-solid fa-file-pdf text-emerald-500"; 
+                    formatLabel = "PDF";
+                    badgeColor = "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/10";
+                }
+                else if (b.format === 'curso') { 
+                    iconClass = "fa-solid fa-graduation-cap text-indigo-500"; 
+                    formatLabel = "Curso";
+                    badgeColor = "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/10";
+                }
+
+                const card = document.createElement('div');
+                card.onclick = () => window.open(b.url, '_blank');
+                card.className = "flex items-center justify-between p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 hover:border-slate-350 dark:hover:border-slate-700/80 cursor-pointer transition-all duration-300 shadow-sm hover:shadow";
+                card.innerHTML = `
+                    <div class="flex items-center gap-3.5 min-w-0">
+                        <div class="w-10 h-10 rounded-xl bg-white dark:bg-slate-900 flex items-center justify-center shrink-0 border border-slate-200 dark:border-slate-800">
+                            <i class="${iconClass} text-base"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <h5 class="text-sm font-bold text-slate-800 dark:text-slate-100 truncate pr-2" title="${b.title}">${b.title}</h5>
+                            <div class="flex items-center gap-2 mt-1">
+                                <span class="text-[9px] px-2 py-0.5 rounded-full font-bold ${badgeColor}">
+                                    ${formatLabel}
+                                </span>
+                                <span class="text-[9px] px-1.5 py-0.5 rounded font-semibold text-slate-500 dark:text-slate-400 bg-slate-200/40 dark:bg-slate-800">${b.theme}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Acciones del Recurso -->
+                    <div class="flex items-center gap-2 shrink-0 ml-3" onclick="event.stopPropagation();">
+                        <button onclick="archiveBookmark(${b.id})" class="text-slate-450 dark:text-slate-500 hover:text-amber-500 dark:hover:text-amber-400 transition-colors p-1.5 rounded-lg hover:bg-white dark:hover:bg-slate-800 border border-transparent hover:border-slate-200 dark:hover:border-slate-700" title="Archivar">
+                            <i class="fa-solid fa-box-archive text-xs"></i>
+                        </button>
+                        <button onclick="deleteBookmark(${b.id})" class="text-slate-450 dark:text-slate-500 hover:text-rose-500 dark:hover:text-rose-450 transition-colors p-1.5 rounded-lg hover:bg-white dark:hover:bg-slate-800 border border-transparent hover:border-slate-200 dark:hover:border-slate-700" title="Eliminar">
+                            <i class="fa-solid fa-trash text-xs"></i>
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // ACCIÓN: FILTRADO DE RECURSOS POR CHIPS
+        function filterResources(format) {
+            selectedFormat = format;
+            
+            const chips = document.querySelectorAll('.filter-chip');
+            chips.forEach(chip => {
+                chip.className = "filter-chip px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-850 border border-slate-200 dark:border-slate-800 transition";
+            });
+
+            // Destacar botón activo
+            event.currentTarget.className = "filter-chip px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 dark:bg-white text-white dark:text-slate-950 shadow-sm border border-transparent transition";
+            
+            renderBookmarks();
+        }
+
+        // EVENT BUSCADOR LIVE
+        document.getElementById('bookmark-search').addEventListener('input', () => {
+            renderBookmarks();
+        });
+
+        // ACCIÓN: AGREGAR MARCADOR SIN IMAGEN
+        function addNewBookmark() {
+            const titleInput = document.getElementById('new-title');
+            const urlInput = document.getElementById('new-url');
+            const formatInput = document.getElementById('new-format');
+            const themeInput = document.getElementById('new-theme');
+
+            if (!titleInput.value.trim() || !urlInput.value.trim()) {
+                showToast("Ingresa el título y la URL.");
+                return;
+            }
+
+            const newBookmark = {
+                id: Date.now(),
+                title: titleInput.value.trim(),
+                url: urlInput.value.trim().startsWith('http') ? urlInput.value.trim() : 'https://' + urlInput.value.trim(),
+                format: formatInput.value,
+                theme: themeInput.value,
+                status: 'active'
+            };
+
+            bookmarks.unshift(newBookmark);
+            localStorage.setItem('student_bookmarks', JSON.stringify(bookmarks));
+            
+            titleInput.value = '';
+            urlInput.value = '';
+
+            renderBookmarks();
+            showToast("Marcador guardado con éxito");
+        }
+
+        // ACCIÓN: ARCHIVAR UN RECURSO
+        function archiveBookmark(id) {
+            bookmarks = bookmarks.map(b => {
+                if (b.id === id) b.status = 'archived';
+                return b;
+            });
+            localStorage.setItem('student_bookmarks', JSON.stringify(bookmarks));
+            renderBookmarks();
+            showToast("Marcador enviado al Archivo");
+        }
+
+        // ACCIÓN: ELIMINAR COMPLETAMENTE
+        function deleteBookmark(id) {
+            bookmarks = bookmarks.filter(b => b.id !== id);
+            localStorage.setItem('student_bookmarks', JSON.stringify(bookmarks));
+            renderBookmarks();
+            renderArchive();
+            showToast("Marcador eliminado definitivamente");
+        }
+
+        // RENDERIZAR LA VISTA DE ARCHIVO (Compacto y alineado)
+        function renderArchive() {
+            const grid = document.getElementById('archive-grid');
+            grid.innerHTML = '';
+
+            const archivedList = bookmarks.filter(b => b.status === 'archived');
+
+            if (archivedList.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full py-16 text-center text-slate-450 dark:text-slate-500">
+                        <i class="fa-solid fa-box-open text-5xl mb-4 opacity-50"></i>
+                        <p class="text-sm">El archivo está vacío.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            archivedList.forEach(b => {
+                let iconClass = "fa-solid fa-globe text-cyan-500";
+                if (b.format === 'video') iconClass = "fa-solid fa-video text-rose-500";
+                else if (b.format === 'pdf') iconClass = "fa-solid fa-file-pdf text-emerald-500";
+                else if (b.format === 'curso') iconClass = "fa-solid fa-graduation-cap text-indigo-500";
+
+                const card = document.createElement('div');
+                card.className = "flex rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 overflow-hidden items-center p-3.5 gap-3.5";
+                card.innerHTML = `
+                    <div class="w-10 h-10 rounded-xl bg-white dark:bg-slate-800 flex items-center justify-center shrink-0 border border-slate-200 dark:border-slate-700">
+                        <i class="${iconClass} text-base"></i>
+                    </div>
+                    <div class="flex-grow min-w-0">
+                        <h4 class="text-xs font-bold text-slate-800 dark:text-slate-200 truncate pr-2" title="${b.title}">${b.title}</h4>
+                        <span class="text-[9px] text-slate-400 dark:text-slate-500 uppercase tracking-wider">${b.format}</span>
+                        <div class="flex gap-3 mt-1">
+                            <button onclick="restoreBookmark(${b.id})" class="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold hover:underline">
+                                <i class="fa-solid fa-arrow-rotate-left mr-0.5"></i> Restaurar
+                            </button>
+                            <button onclick="deleteBookmark(${b.id})" class="text-[10px] text-rose-600 dark:text-rose-500 font-bold hover:underline">
+                                <i class="fa-solid fa-trash mr-0.5"></i> Borrar
+                            </button>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // RESTAURAR MARCADOR DEL ARCHIVO
+        function restoreBookmark(id) {
+            bookmarks = bookmarks.map(b => {
+                if (b.id === id) b.status = 'active';
+                return b;
+            });
+            localStorage.setItem('student_bookmarks', JSON.stringify(bookmarks));
+            renderArchive();
+            showToast("Marcador restaurado al panel principal");
+        }
+
+        // CONTROLES DE CAMBIO DE MES DINÁMICO
+        function prevMonth() {
+            currentMonth--;
+            if (currentMonth < 0) {
+                currentMonth = 11;
+                currentYear--;
+            }
+            renderCalendar();
+            renderEventsList();
+        }
+
+        // AVANZAR MES
+        function nextMonth() {
+            currentMonth++;
+            if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear++;
+            }
+            renderCalendar();
+            renderEventsList();
+        }
+
+        // RENDERIZADO DEL CALENDARIO DINÁMICO REAL
+        function renderCalendar() {
+            const container = document.getElementById('calendar-days');
+            container.innerHTML = '';
+
+            const monthLabel = `${MONTHS_SPANISH[currentMonth]} ${currentYear}`;
+            document.getElementById('calendar-month-label').textContent = monthLabel;
+            document.getElementById('header-date-indicator').textContent = monthLabel;
+
+            const firstDayIndex = new Date(currentYear, currentMonth, 1).getDay();
+            const totalDaysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+            for (let i = 0; i < firstDayIndex; i++) {
+                const blank = document.createElement('div');
+                container.appendChild(blank);
+            }
+
+            const realTodayDay = 13;
+            const realTodayMonth = 6; // Julio (0-indexed)
+            const realTodayYear = 2026;
+
+            for (let day = 1; day <= totalDaysInMonth; day++) {
+                const dayEl = document.createElement('button');
+                dayEl.onclick = () => setPaymentDay(day);
+                dayEl.className = "w-8 h-8 rounded-full flex flex-col items-center justify-center font-semibold transition cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-800 mx-auto relative text-slate-800 dark:text-slate-100";
+                
+                const numSpan = document.createElement('span');
+                numSpan.textContent = day;
+                dayEl.appendChild(numSpan);
+
+                const hasEvent = calendarEvents.some(ev => ev.day === day && ev.month === currentMonth && ev.year === currentYear);
+                if (hasEvent) {
+                    const dot = document.createElement('span');
+                    dot.className = "w-1 h-1 bg-cyan-500 dark:bg-cyan-400 rounded-full absolute bottom-1";
+                    dayEl.appendChild(dot);
+                }
+
+                if (day === realTodayDay && currentMonth === realTodayMonth && currentYear === realTodayYear) {
+                    dayEl.classList.add('border-2', 'border-cyan-500', 'text-cyan-500');
+                    dayEl.title = "Hoy (13 de Julio)";
+                }
+
+                if (day === paymentDay) {
+                    dayEl.className = "w-8 h-8 rounded-full flex flex-col items-center justify-center font-bold transition cursor-pointer mx-auto relative bg-amber-500 text-white hover:bg-amber-600";
+                    dayEl.title = "Límite de Colegiatura";
+                    const existingDot = dayEl.querySelector('.bg-cyan-500, .bg-cyan-400');
+                    if (existingDot) existingDot.remove();
+                }
+
+                container.appendChild(dayEl);
+            }
+        }
+
+        // ACCIÓN: FIJAR DÍA DE PAGO
+        function setPaymentDay(day) {
+            paymentDay = day;
+            localStorage.setItem('student_payment_day', paymentDay);
+            renderCalendar();
+            renderEventsList();
+            showToast(`Límite de pago de colegiatura actualizado: ${day} de ${MONTHS_SPANISH[currentMonth]}`);
+        }
+
+        // ACCIÓN: AGREGAR EVENTOS DINÁMICOS AL CALENDARIO ASOCIADO AL MES VISIBLE
+        function addNewEvent() {
+            const titleInput = document.getElementById('event-title-input');
+            const dayInput = document.getElementById('event-day-input');
+
+            if (!titleInput.value.trim() || !dayInput.value.trim()) {
+                showToast("Por favor ingresa un título y el día.");
+                return;
+            }
+
+            const day = parseInt(dayInput.value);
+            const totalDaysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+            if (day < 1 || day > totalDaysInMonth) {
+                showToast(`Día inválido para ${MONTHS_SPANISH[currentMonth]}. Máximo ${totalDaysInMonth} días.`);
+                return;
+            }
+
+            const newEvent = {
+                id: Date.now(),
+                title: titleInput.value.trim(),
+                day: day,
+                month: currentMonth,
+                year: currentYear
+            };
+
+            calendarEvents.push(newEvent);
+            localStorage.setItem('student_events', JSON.stringify(calendarEvents));
+
+            titleInput.value = '';
+            dayInput.value = '';
+
+            renderCalendar();
+            renderEventsList();
+            showToast("Evento agendado exitosamente");
+        }
+
+        // ACCIÓN: ELIMINAR EVENTOS DINÁMICOS
+        function deleteEvent(id) {
+            calendarEvents = calendarEvents.filter(ev => ev.id !== id);
+            localStorage.setItem('student_events', JSON.stringify(calendarEvents));
+            renderCalendar();
+            renderEventsList();
+            showToast("Evento eliminado");
+        }
+
+        // RENDERIZAR LA LISTA DE EVENTOS CLAVE
+        function renderEventsList() {
+            const container = document.getElementById('events-list-container');
+            container.innerHTML = '';
+
+            const realTodayDay = 13;
+            const realTodayMonth = 6; 
+            const realTodayYear = 2026;
+
+            const t1 = new Date(realTodayYear, realTodayMonth, realTodayDay);
+            const t2 = new Date(currentYear, currentMonth, paymentDay);
+            const diffTime = t2 - t1;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            let paymentBadgeText = '';
+            let paymentBadgeClass = '';
+
+            if (diffDays > 0) {
+                paymentBadgeText = `Faltan ${diffDays} días`;
+                paymentBadgeClass = "text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-1 rounded-lg shrink-0";
+            } else if (diffDays === 0) {
+                paymentBadgeText = `HOY VENCE`;
+                paymentBadgeClass = "text-[10px] font-bold uppercase tracking-wider text-red-600 dark:text-red-400 bg-red-500/20 px-2 py-1 rounded-lg animate-pulse shrink-0";
+            } else {
+                paymentBadgeText = `Vencido`;
+                paymentBadgeClass = "text-[10px] font-bold uppercase tracking-wider text-slate-550 bg-slate-500/10 px-2 py-1 rounded-lg shrink-0";
+            }
+
+            // Renderizar tarjeta de pago
+            const paymentCard = document.createElement('div');
+            paymentCard.className = "flex items-center justify-between p-3.5 rounded-2xl bg-amber-500/5 dark:bg-amber-500/10 border border-amber-200/40 dark:border-amber-500/20";
+            paymentCard.innerHTML = `
+                <div class="flex items-center gap-3 min-w-0 pr-2">
+                    <div class="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center text-sm shrink-0">
+                        <i class="fa-solid fa-credit-card"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <h5 class="text-xs font-bold text-slate-700 dark:text-amber-200 truncate">Límite de Colegiatura</h5>
+                        <span class="text-[10px] text-slate-450 truncate block">Límite: ${paymentDay} de ${MONTHS_SPANISH[currentMonth]}</span>
+                    </div>
+                </div>
+                <span class="${paymentBadgeClass}">${paymentBadgeText}</span>
+            `;
+            container.appendChild(paymentCard);
+
+            const currentMonthEvents = calendarEvents.filter(ev => ev.month === currentMonth && ev.year === currentYear);
+
+            if (currentMonthEvents.length === 0) {
+                return;
+            }
+
+            currentMonthEvents.sort((a, b) => a.day - b.day);
+
+            currentMonthEvents.forEach(ev => {
+                const eventCard = document.createElement('div');
+                eventCard.className = "flex items-center justify-between p-3.5 rounded-2xl bg-indigo-500/5 dark:bg-indigo-500/10 border border-indigo-200/40 dark:border-indigo-500/20";
+                eventCard.innerHTML = `
+                    <div class="flex items-center gap-3 min-w-0 flex-grow pr-2">
+                        <div class="w-8 h-8 rounded-xl bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-sm shrink-0">
+                            <i class="fa-solid fa-code"></i>
+                        </div>
+                        <div class="truncate min-w-0">
+                            <h5 class="text-xs font-bold text-slate-700 dark:text-indigo-200 truncate" title="${ev.title}">${ev.title}</h5>
+                            <span class="text-[10px] text-slate-450 block truncate">Entrega Académica</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0">
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 px-2 py-1 rounded-lg">${ev.day} de ${MONTHS_SPANISH[currentMonth].substring(0, 3)}</span>
+                        <button onclick="deleteEvent(${ev.id})" class="text-slate-450 hover:text-rose-500 transition-colors p-1" title="Eliminar evento">
+                            <i class="fa-solid fa-circle-xmark"></i>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(eventCard);
+            });
+        }
+
+        // FUNCIONALIDAD ADICIONAL: PORTABILIDAD (EXPORTAR JSON GLOBAL)
+        // Agrupa todas las estructuras en un único objeto ordenado
+        function exportAllData() {
+            const rawData = {
+                bookmarks: bookmarks,
+                academicData: academicData,
+                calendarEvents: calendarEvents,
+                paymentDay: paymentDay
+            };
+
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(rawData, null, 4));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `Student_Dashboard_Backup_${new Date().toISOString().split('T')[0]}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+
+            showToast("Datos exportados en JSON exitosamente");
+        }
+
+        // FUNCIONALIDAD ADICIONAL: PORTABILIDAD (IMPORTAR JSON GLOBAL)
+        // Con compatibilidad retroactiva por si venías de una estructura basada en un solo objeto (u1, u2)
+        function importAllData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    
+                    if (importedData.bookmarks) {
+                        bookmarks = importedData.bookmarks;
+                        localStorage.setItem('student_bookmarks', JSON.stringify(bookmarks));
+                    }
+                    if (importedData.academicData) {
+                        if (!Array.isArray(importedData.academicData)) {
+                            academicData = [];
+                            if (importedData.academicData.u1) academicData.push({ id: 'u_1', ...importedData.academicData.u1 });
+                            if (importedData.academicData.u2) academicData.push({ id: 'u_2', ...importedData.academicData.u2 });
+                        } else {
+                            academicData = importedData.academicData;
+                        }
+                        localStorage.setItem('student_academic', JSON.stringify(academicData));
+                    }
+                    if (importedData.calendarEvents) {
+                        calendarEvents = importedData.calendarEvents;
+                        localStorage.setItem('student_events', JSON.stringify(calendarEvents));
+                    }
+                    if (importedData.paymentDay !== undefined) {
+                        paymentDay = parseInt(importedData.paymentDay);
+                        localStorage.setItem('student_payment_day', paymentDay);
+                    }
+
+                    renderDashboardAcademic();
+                    renderBookmarks();
+                    renderCalendar();
+                    renderEventsList();
+                    renderSettingsUniversities();
+
+                    showToast("¡Datos importados con éxito!");
+                    switchView('dashboard');
+                } catch (err) {
+                    showToast("Error al procesar el JSON. Formato no válido.");
+                    console.error(err);
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = ''; 
+        }
+
+        // TOAST NOTIFICACIÓN COMÚN
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-message').textContent = message;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3050);
+        }
+    </script>
+</body>
+</html>
